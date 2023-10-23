@@ -1,7 +1,9 @@
 import random
 from power_temp_simulation.power_temp_simulation import PowerTemperatureSimulator
+import os
 
 SIM_TIME = 0.0
+DELTA_TIME = 0.0
 
 
 class CPU:
@@ -47,7 +49,9 @@ class CPU:
     def prob_to_change_status(self):
         # Dividing the working_time in chunks, each one correspond to the status time interval
         int_value = int(self.working_time / self.delta_time_change_status)
-        if int_value > self.status:
+        if int_value != self.status:
+            if int_value == 2:
+                a = 0
             # Get the decimal part, used as probability score
             prob = (self.working_time / self.delta_time_change_status) - int_value
             if random.random() < prob:
@@ -61,9 +65,12 @@ class CPU:
         # If the cpu is working increase working time
         # and check eventually status changes
         if SIM_TIME < self.task_time:
-            self.working_time = SIM_TIME - self.task_start_time
+            self.working_time += DELTA_TIME
             self.prob_to_change_status()
             return
+
+        self.working_time -= DELTA_TIME
+        self.working_time = max(0.0, self.working_time)
 
         # FREE THE CPU
         self.is_busy = False
@@ -71,14 +78,13 @@ class CPU:
         self.task_time = 0.0
         # print(f"{SIM_TIME:.3f} - {self.status()}")
 
-
-    def get_param_info(self)->str:
-        return f"|JID:{self.current_task} |T:{self.temperature:.3f} |W:{self.power:.3f} |S:{self.status} |"
+    def get_param_info(self) -> str:
+        return f"|JID:{[self.current_task.id if self.current_task is not None else -1]} |T:{self.temperature:.3f} |W:{self.power:.3f} |S:{self.status} | {self.working_time}"
 
     def __str__(self):
         if self.is_busy:
-            return f"CPU[{self.id}:.] > {self.current_task.id}"
-        return f"CPU[{self.id}] > -1"
+            return f"CPU[{self.id:03}] {self.get_param_info()}"
+        return f"CPU[{self.id:03}] {self.get_param_info()}"
 
 
 class Task:
@@ -109,9 +115,9 @@ class Board:
             cpu.update()
 
     def self_report(self):
-        string_output = f"Board[ {self.id} ]"
+        string_output = f"Board[{self.id:03}]"
         for cpu in self.cpus:
-            string_output += f"\t|\t"
+            string_output += f"\t|"
             string_output += cpu.__str__()
         string_output += "\t||"
         return string_output

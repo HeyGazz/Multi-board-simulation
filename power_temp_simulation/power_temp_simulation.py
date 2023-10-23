@@ -1,7 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
-from ornstein_uhlenbeck import OUParameters, OrnsteinUhlenbeck, MultivariateOrnsteinUhlenbeck
+from power_temp_simulation.ornstein_uhlenbeck import OUParameters, OrnsteinUhlenbeck, MultivariateOrnsteinUhlenbeck
 
 
 class PowerSimulator:
@@ -93,67 +93,67 @@ class PowerTemperatureSimulator:
     def value_at(self, time_clock):
         return self.generator.value_at(time_clock)
 
-
-if __name__ == '__main__':
-
-    random = np.random.RandomState(1234)
-
-    print()
-    print("Power Simulation")
-    print("Creating generator at default level")
-    power_sim = PowerSimulator(random=random)
-
-    ticks = 100
-    time = 0
-    levels = list()
-    values = list()
-    for level in range(4):
-        power_sim.set_level(level)
-        for t in range(ticks):
-            x = power_sim.value_at(time)
-            levels.append(level)
-            values.append(x)
-            time += 1
-
-    print("Simulating {4 * ticks} instants ({ticks} per each level)")
-    print(levels)
-    print(values)
-
-    plt.cla()
-    plt.title('Power Consumption')
-    x_list = list(range(len(values)))
-    plt.plot(x_list, values, label='Power Consumption')
-    plt.legend()
-    plt.show()
-
-    print()
-    print("Power-temperature Simulation")
-    print("Creating generator at default level")
-    powertemp_sim = PowerTemperatureSimulator(random=random)
-
-    ticks = 100
-    time = 0
-    levels = list()
-    values = list()
-    for level in range(4):
-        powertemp_sim.set_level(level)
-        for t in range(ticks):
-            x = powertemp_sim.value_at(time)
-            levels.append(level)
-            values.append(x.copy())
-            time += 1
-
-    print("Simulating {4 * ticks} instants ({ticks} per each level)")
-    print(levels)
-    print(values)
-
-    power_values = [v[0] for v in values]
-    temp_values = [v[1] for v in values]
-
-    plt.cla()
-    plt.title('Power Consumption vs Temperature')
-    x_list = list(range(len(power_values)))
-    plt.plot(x_list, power_values, label='Power Consumption')
-    plt.plot(x_list, temp_values, label='Temperature')
-    plt.legend()
-    plt.show()
+#
+# if __name__ == '__main__':
+#
+#     random = np.random.RandomState(1234)
+#
+#     print()
+#     print("Power Simulation")
+#     print("Creating generator at default level")
+#     power_sim = PowerSimulator(random=random)
+#
+#     ticks = 100
+#     time = 0
+#     levels = list()
+#     values = list()
+#     for level in range(4):
+#         power_sim.set_level(level)
+#         for t in range(ticks):
+#             x = power_sim.value_at(time)
+#             levels.append(level)
+#             values.append(x)
+#             time += 1
+#
+#     print("Simulating {4 * ticks} instants ({ticks} per each level)")
+#     print(levels)
+#     print(values)
+#
+#     plt.cla()
+#     plt.title('Power Consumption')
+#     x_list = list(range(len(values)))
+#     plt.plot(x_list, values, label='Power Consumption')
+#     plt.legend()
+#     plt.show()
+#
+#     print()
+#     print("Power-temperature Simulation")
+#     print("Creating generator at default level")
+#     powertemp_sim = PowerTemperatureSimulator(random=random)
+#
+#     ticks = 100
+#     time = 0
+#     levels = list()
+#     values = list()
+#     for level in range(4):
+#         powertemp_sim.set_level(level)
+#         for t in range(ticks):
+#             x = powertemp_sim.value_at(time)
+#             levels.append(level)
+#             values.append(x.copy())
+#             time += 1
+#
+#     print("Simulating {4 * ticks} instants ({ticks} per each level)")
+#     print(levels)
+#     print(values)
+#
+#     power_values = [v[0] for v in values]
+#     temp_values = [v[1] for v in values]
+#
+#     plt.cla()
+#     plt.title('Power Consumption vs Temperature')
+#     x_list = list(range(len(power_values)))
+#     plt.plot(x_list, power_values, label='Power Consumption')
+#     plt.plot(x_list, temp_values, label='Temperature')
+#     plt.legend()
+#     plt.show()
