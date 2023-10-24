@@ -97,13 +97,13 @@ class CPU:
         self.working_time -= DELTA_TIME
         self.working_time = max(0.0, self.working_time)
 
-
     def get_param_info(self) -> str:
-        return (f"|JID:{[self.current_task.id if self.current_task is not None else -1]} "
-                f"|T:{self.temperature:.3f} "
-                f"|W:{self.power:.3f} "
-                f"|S:{self.status} "
-                f"| {self.working_time}[s]")
+        task_value = [self.current_task.id if self.current_task is not None else -1]
+        return ("JID:[" + f"{task_value[0]}".rjust(2) + "] " +
+                "T:" + f"{self.temperature:.3f}".rjust(6) + " " +
+                "W:" + f"{self.power:.3f}".rjust(6) + " " +
+                f"S:{self.status} "
+                f"{self.working_time:6}" + "[s]")
 
     def __str__(self):
         if self.is_busy:
