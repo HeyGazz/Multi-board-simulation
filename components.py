@@ -197,7 +197,7 @@ class Network:
             board.update()
 
     def reset(self):
-        for board in enumerate(self.boards):
+        for board in self.boards:
             board.reset()
 
     def interact(self, data=None, is_fault=False):
