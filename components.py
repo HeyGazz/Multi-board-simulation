@@ -22,7 +22,6 @@ class CPU:
         self.is_busy = False
         self.current_task = None
         self.task_time = 0.0
-        self.task_start_time = 0.0
 
         # POWER TEMPERATURE SPECIFIC PARAMETERS
         self.temperature = 0
@@ -43,7 +42,6 @@ class CPU:
         self.is_busy = False
         self.current_task = None
         self.task_time = 0.0
-        self.task_start_time = 0.0
 
         # POWER TEMPERATURE SPECIFIC PARAMETERS
         self.temperature = self.default_params.get('temperature')
@@ -60,7 +58,6 @@ class CPU:
         self.execute_task()
 
     def execute_task(self):
-        self.task_start_time = SIM_TIME
         self.task_time = self.current_task.execute() + SIM_TIME
 
     def set_status(self, val):
