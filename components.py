@@ -1,6 +1,5 @@
 import random
 from power_temp_simulation.power_temp_simulation import PowerTemperatureSimulator
-import os
 
 SIM_TIME = 0.0
 DELTA_TIME = 0.0
@@ -30,16 +29,20 @@ class CPU:
         self.power_temp_sim.set_level(self.status)
 
     def assign_task(self, task):
-        if not self.is_busy:
-            self.is_busy = True
-            self.current_task = task
-            self.execute_task()
+        self.current_task = task
+        # if the task is the null task put the cpu in idle
+        if self.current_task is None:
+            self.task_time = 0
+            return
+        # execute the task
+        self.is_busy = True
+        self.execute_task()
 
     def execute_task(self):
         self.task_start_time = SIM_TIME
         self.task_time = self.current_task.execute() + SIM_TIME
 
-    def change_status(self, val):
+    def set_status(self, val):
         self.status = val
         self.power_temp_sim.set_level(self.status)
 
@@ -49,37 +52,58 @@ class CPU:
     def prob_to_change_status(self):
         # Dividing the working_time in chunks, each one correspond to the status time interval
         int_value = int(self.working_time / self.delta_time_change_status)
+        int_value = min(3, int_value)
+
         if int_value != self.status:
-            if int_value == 2:
-                a = 0
-            # Get the decimal part, used as probability score
+            # Get the decimal part, used as probability
             prob = (self.working_time / self.delta_time_change_status) - int_value
+            # If the status is changing from high value to low, the probability is (1 - prob)
+            if int_value < self.status:
+                prob = 1 - prob
+
             if random.random() < prob:
-                self.change_status(int_value)
+                self.set_status(int_value)
 
     def update(self):
+
+        # compute probability to change status
+        self.prob_to_change_status()
 
         # Simulate temperature and power consumption
         self.simulate_params()
 
-        # If the cpu is working increase working time
-        # and check eventually status changes
-        if SIM_TIME < self.task_time:
-            self.working_time += DELTA_TIME
-            self.prob_to_change_status()
-            return
+        # CPU IS WORKING
+        if self.current_task is not None:
+            # TASK isn't ended yet
+            if SIM_TIME < self.task_time:
+                self.working_time += DELTA_TIME
+                return
 
+            # If the task is a periodic one the cpu will auto re-assign the same task
+            if self.current_task.is_periodic:
+                self.assign_task(self.current_task)
+                return
+
+            # Task is ended and isn't periodic
+            else:
+                # FREE THE CPU
+                self.is_busy = False
+                self.task_time = 0.0
+                # CLEAR TASK
+                self.current_task = None
+                return
+
+        # REDUCE WORKING TIME SINCE
         self.working_time -= DELTA_TIME
         self.working_time = max(0.0, self.working_time)
 
-        # FREE THE CPU
-        self.is_busy = False
-        self.current_task = None
-        self.task_time = 0.0
-        # print(f"{SIM_TIME:.3f} - {self.status()}")
 
     def get_param_info(self) -> str:
-        return f"|JID:{[self.current_task.id if self.current_task is not None else -1]} |T:{self.temperature:.3f} |W:{self.power:.3f} |S:{self.status} | {self.working_time}"
+        return (f"|JID:{[self.current_task.id if self.current_task is not None else -1]} "
+                f"|T:{self.temperature:.3f} "
+                f"|W:{self.power:.3f} "
+                f"|S:{self.status} "
+                f"| {self.working_time}[s]")
 
     def __str__(self):
         if self.is_busy:
@@ -107,8 +131,7 @@ class Board:
 
     def assign_task(self, task):
         for idx, t in enumerate(task):
-            if t is not None:
-                self.cpus[idx].assign_task(t)
+            self.cpus[idx].assign_task(t)
 
     def update(self):
         for cpu in self.cpus:

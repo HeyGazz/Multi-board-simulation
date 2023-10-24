@@ -13,14 +13,14 @@ if __name__ == '__main__':
     random = np.random.RandomState(1234)
 
     # Create tasks
-    task_A = Task(0, base_execution_time=10, std=2)
+    task_A = Task(0, base_execution_time=10, std=2, is_periodic=True)
     task_B = Task(1, base_execution_time=5, std=0.5)
 
     # Create Network
     net = Network(num_boards=1, num_cpus=1, _random=random)
 
     # Create Simulation
-    sim = Simulation(object=net, delta_time=0.5)
+    sim = Simulation(_object=net, delta_time=0.5)
 
     data = {
             0: [task_A],
@@ -28,12 +28,7 @@ if __name__ == '__main__':
             }
 
     sim.interact_with_object(data)
-    for _ in range(20):
-        custom_print(sim.interact_with_object())
-        sim.running_simulation(time_interval=1.0)
-
-    sim.interact_with_object(data)
-    for _ in range(20):
+    for _ in range(30):
         custom_print(sim.interact_with_object())
         sim.running_simulation(time_interval=1.0)
 
