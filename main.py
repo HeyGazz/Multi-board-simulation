@@ -4,6 +4,8 @@ from components import *
 from simulation import *
 
 
+NO_CHANGE = 0
+
 def custom_print(text):
     formatted_time = f"{components.SIM_TIME:.2f}"
     print(f"t[s]: {formatted_time:03}" + " " * (8 - len(formatted_time)), end='\t')
@@ -32,8 +34,11 @@ def simulation_one_board_test(_params):
     # The dictionary is composed as follow:
     #   key: id board
     #   value: list of tasks to assign (NB use None to not assign a task to a cpu)
-    # IF YOU HAVE MORE THAN ONE BOARD YOU MUST ADD ANOTHER KEYS BASED ON THE BOARDS' ID
-    data = {0: [list_tasks[0], list_tasks[2], list_tasks[1], list_tasks[0]]}
+
+    # DEFAULT DATA
+    data = {key: [None for _ in range(num_cpus)] for key in range(num_boards)}
+
+    data[0] = [list_tasks[0], list_tasks[2], list_tasks[1], list_tasks[0]]
 
     # ASSIGN TASK
     sim.interact_with_object(data, is_assign_task=True)
@@ -57,12 +62,10 @@ def simulation_one_board_test(_params):
     # BUT YOU WILL GET THE DATA FROM THE NETWORK ONLY AT THE BEGINNING AND AFTER 60 STEPS
 
     print()
-    print(f"*** EXPERIMENT 2 - assign task NULL to first cpu, simulate for 40 seconds")
-    data = {
-        0: [None]
-    }
+    print(f"*** EXPERIMENT 2 - assign task NULL (STOP EXECUTION) to third cpu, simulate for 40 seconds")
+    data[0] = [NO_CHANGE, NO_CHANGE, None]
 
-    sim.interact_with_object(data, is_assign_task=True)
+    sim.interact_with_object(data, is_assign_task=True, is_fault=True)
     for _ in range(40):
         network_status, debug_text = sim.interact_with_object(is_get_data=True)
         custom_print(debug_text)

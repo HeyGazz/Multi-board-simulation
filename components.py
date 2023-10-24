@@ -156,7 +156,8 @@ class Board:
                 if _d != -1:
                     self.cpus[idx].set_status(_d)
             else:
-                self.cpus[idx].assign_task(_d)
+                if isinstance(_d, Task) or _d == None:
+                    self.cpus[idx].assign_task(_d)
 
     def update(self):
         for cpu in self.cpus:
