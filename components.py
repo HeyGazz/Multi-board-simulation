@@ -6,13 +6,16 @@ DELTA_TIME = 0.0
 
 
 class CPU:
-    def __init__(self, _id, _random, status=0):
+    def __init__(self, _id, _random, _params=None):
+        self.id = _id
+        self.power_temp_sim = PowerTemperatureSimulator(random=_random)
+        self.default_params = _params
+
         # GENERIC PARAMETERS
         self.delta_time_change_status = 10.
 
         # CPU SPECIFIC PARAMETERS
-        self.id = _id
-        self.status = status
+        self.status = 0
         self.working_time = 0.0
 
         # TASK SPECIFIC PARAMETERS
@@ -25,8 +28,26 @@ class CPU:
         self.temperature = 0
         self.power = 0
 
-        self.power_temp_sim = PowerTemperatureSimulator(random=_random)
+        self.reset()
         self.power_temp_sim.set_level(self.status)
+
+    def reset(self):
+        # GENERIC PARAMETERS
+        self.delta_time_change_status = self.default_params.get('time_change_status')
+
+        # CPU SPECIFIC PARAMETERS
+        self.status = self.default_params.get('status')
+        self.working_time = 0.0
+
+        # TASK SPECIFIC PARAMETERS
+        self.is_busy = False
+        self.current_task = None
+        self.task_time = 0.0
+        self.task_start_time = 0.0
+
+        # POWER TEMPERATURE SPECIFIC PARAMETERS
+        self.temperature = self.default_params.get('temperature')
+        self.power = self.default_params.get('power')
 
     def assign_task(self, task):
         self.current_task = task
@@ -125,17 +146,36 @@ class Task:
 
 
 class Board:
-    def __init__(self, _id, num_cpus, _random):
+    def __init__(self, _id, num_cpus, _random, _params=None):
         self.id = _id
-        self.cpus = [CPU(i, _random) for i in range(num_cpus)]
+        cpu_params = None
+        if _params is not None:
+            cpu_params = _params.get('cpu')
+        self.cpus = [CPU(i, _random, cpu_params) for i in range(num_cpus)]
 
-    def assign_task(self, task):
-        for idx, t in enumerate(task):
-            self.cpus[idx].assign_task(t)
+    def assign_data(self, data, is_fault=False):
+        for idx, _d in enumerate(data):
+            if is_fault:
+                if _d != -1:
+                    self.cpus[idx].set_status(_d)
+            else:
+                self.cpus[idx].assign_task(_d)
 
     def update(self):
         for cpu in self.cpus:
             cpu.update()
+
+    def collect_data_from_cpus(self):
+        output_list = list()
+        for cpu in self.cpus:
+            if cpu.current_task is not None:
+                output_list.append(cpu.current_task.id)
+            else:
+                output_list.append(-1)
+            output_list.append(cpu.temperature)
+            output_list.append(cpu.power)
+            output_list.append(cpu.status)
+        return output_list
 
     def self_report(self):
         string_output = f"Board[{self.id:03}]"
@@ -145,21 +185,32 @@ class Board:
         string_output += "\t||"
         return string_output
 
+    def reset(self):
+        for cpu in self.cpus:
+            cpu.reset()
+
 
 class Network:
-    def __init__(self, num_boards, num_cpus, _random):
-        self.boards = [Board(idx, num_cpus, _random) for idx in range(num_boards)]
+    def __init__(self, num_boards, num_cpus, _random, _params=None):
+        self.boards = [Board(idx, num_cpus, _random, _params) for idx in range(num_boards)]
 
     def update(self):
         for board in self.boards:
             board.update()
 
-    def interact(self, data=None):
+    def reset(self):
+        for board in enumerate(self.boards):
+            board.reset()
+
+    def interact(self, data=None, is_fault=False):
         if data is not None:
             for idx, board in enumerate(self.boards):
-                board.assign_task(data.get(idx))
+                board.assign_data(data.get(idx), is_fault)
+
         else:
             output_string = list()
+            output_data = list()
             for board in self.boards:
                 output_string.append(board.self_report())
-            return output_string
+                output_data.append(board.collect_data_from_cpus())
+            return output_data, output_string

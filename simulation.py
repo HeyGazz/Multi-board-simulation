@@ -20,8 +20,17 @@ class Simulation:
             # INCREASE the simulation time
             components.SIM_TIME += components.DELTA_TIME
 
-    def interact_with_object(self, data=None):
-        if data is not None:
+    def interact_with_object(self, data=None, is_assign_task=False, is_get_data=False, is_reset=False, is_fault=False):
+
+        if is_assign_task:
             self.object.interact(data)
-        else:
+        elif is_get_data:
             return self.object.interact()
+        elif is_reset:
+            self.object.reset()
+        elif is_fault:
+            self.object.interact(data, is_fault)
+        # if data is not None:
+        #     self.object.interact(data)
+        # else:
+        #     return self.object.interact()
