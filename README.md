@@ -133,7 +133,7 @@ Network components: 1 board with 4 cpus
     # Create Simulation
     sim = Simulation(_object=net, delta_time=_params.get('delta_time'))
 ```
--Use the function of the class SIMULATION to comunicate with the network:
+-Use the function of the class SIMULATION to communicate with the network:
 - assign task/fail, get status data, reset
 ```
     sim.interact_with_object(data, is_assign_task=True)
